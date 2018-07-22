@@ -19,9 +19,9 @@ include_directories(bigged
         entt/src/entt
         )
 
-add_executable(bigged
+add_library(bigged
         bigg/src/bigg.cpp
         bigg/deps/bgfx.cmake/bgfx/examples/common/bounds.cpp
         bigg/deps/bgfx.cmake/bgfx/examples/common/debugdraw/debugdraw.cpp
-        main.cpp
+        bigged.cpp
         )

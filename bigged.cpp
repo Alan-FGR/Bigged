@@ -89,6 +89,7 @@ union col32
 	static col32 blue;
 	static col32 purple;
 	static col32 magenta;
+	static col32 white;
 };
 col32 col32::red(255, 0, 0);
 col32 col32::orange(255, 122, 0);
@@ -99,43 +100,7 @@ col32 col32::cyan(0, 255, 255);
 col32 col32::blue(0, 0, 255);
 col32 col32::purple(150, 0, 255);
 col32 col32::magenta(255, 0, 255);
-
-struct AABB
-{
-	vec3 min, max;
-	AABB(vec3 min, vec3 max) : min(min), max(max) {}
-};
-
-struct Transform
-{
-	vec3 scalexyz;
-	quat rotation;
-	vec3 position;
-
-	mat4 GetMatrix() {
-		auto m = mat4(rotation);
-		m = scale(m, scalexyz);
-		return translate(m, position);
-	}
-};
-
-struct Frustum
-{
-	float fov;
-	float nearPlane;
-	float farPlane;
-	float aspectRatio;
-
-	mat4 GetFrustumMatrix(mat4 viewMatrix) {
-		mat4 pm = glm::perspectiveFov(radians(fov), aspectRatio, 1.f, nearPlane, farPlane);
-		mat4 vpm = pm * viewMatrix;
-		return vpm;
-	}
-
-	mat4 GetFrustumMatrix(Transform holder) {
-		return GetFrustumMatrix(inverse(holder.GetMatrix()));
-	}
-};
+col32 col32::white(255, 255, 255);
 
 class TestBedBase : public bigg::Application
 {
@@ -222,6 +187,8 @@ private:
 		dde = new DebugDrawEncoder(); 
 
 		dde->begin(0);
+		dde->setTransform(nullptr);
+		bgfx::setTransform(nullptr);
 
 		update_rewire(dt);
 
@@ -316,6 +283,13 @@ public:
 
 	static void DrawOBB(mat4 m, col32 color, bool drawAABB = false, bool wireframe = true) {
 		Obb obb;
+
+		//wuuuuuuuuuuuuuuuuuuuuuuuuut? todo fixme *send halp* wth
+ 		mat4 nm = translate(mat4(1), -vec3(inverse(m)[3]));
+		m = nm *mat4(mat3(m));
+ 
+ 		dde->setTransform(nullptr);
+
 		memcpy(&obb.m_mtx, &m, sizeof m);
 		dde->setColor(color.val);
 		dde->setWireframe(wireframe);
@@ -348,7 +322,8 @@ public:
 		dde->draw(sphere);
 	}
 	
-	void DrawFrustum(mat4 mat) {
+	void DrawFrustum(mat4 mat, col32 color) {
+		dde->setColor(color.val);
 		dde->drawFrustum(&mat);
 	}
 
@@ -372,59 +347,3 @@ private:
 	}
 
 };
-
-class FrustumTest : public TestBed {
-	virtual void Init() override
-	{
-	}
-	virtual void Update(float dt) override
-	{
-		DebugDrawEncoder* dde = GetCurrentDDE(); //to draw manually using bgfx debug draw
-		
- 		DrawGrid();
-
-		DrawArrow(vec3(0), vec3(3), col32::purple);
-		DrawAxis(vec3(1));
-		DrawSingleLine(vec3(-1), vec3(-3), col32::red);
-		DrawOrb(vec3(0, 2, 0),1);
-		DrawAABB(vec3(3, 3, 3), vec3(4, 4, 4));
-				
-		Transform t{
-			vec3(1),
-			rotate(quat(1,0,0,0),GetUptime(),vec3(1)),
-			vec3(2)
-		};
-		DrawOBB(t.GetMatrix(), col32::green, true);
-		
-		for (size_t i = 0; i < 10; i++)
-		{
-			for (size_t y = 0; y < 10; y++)
-			{
-				DrawSphereAuto(vec3(i*5, 0, y*5), 0.5f, col32::blue);
-			}
-		}
-		dde->setColor(0xffffffff);
-
-		DrawAxis(t.position);
-
-		Frustum f{
-			90,0.1,20,2
-		};
-		
-		DrawFrustum(f.GetFrustumMatrix(t));
-
-
-
-
-
-	}
-	virtual void Shutdown() override
-	{
-	}
-};
-
-int main(int argc, char** argv)
-{
-	FrustumTest app;
-	return app.Run(argc, argv);
-}

@@ -323,7 +323,7 @@ public:
 		Sphere sphere = { LITV3(center), radius };
 		dde->setColor(color.val);
 		dde->setWireframe(true);
-		auto lodDist = (uint8_t)(bx::pow(length(cameraPosition - center)*0.15f, 1.5f)+0.8f);
+		auto lodDist = (uint8_t)(bx::pow(length(cameraPosition - center)*0.05f, 1.5f)+0.9f);
 		dde->setLod(lodDist);
 		dde->draw(sphere);
 	}

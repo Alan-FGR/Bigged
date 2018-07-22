@@ -312,7 +312,7 @@ public:
 	}
 
 	static void DrawSphere(vec3 center, float radius, col32 color, int lod = 3) {
-		Sphere sphere = { { 0.0f, 5.0f, 0.0f }, 1.0f };
+		Sphere sphere = { LITV3(center), radius };
 		dde->setColor(color.val);
 		dde->setWireframe(true);
 		dde->setLod(lod);

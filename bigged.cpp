@@ -187,8 +187,6 @@ private:
 		dde = new DebugDrawEncoder(); 
 
 		dde->begin(0);
-		dde->setTransform(nullptr);
-		bgfx::setTransform(nullptr);
 
 		update_rewire(dt);
 
@@ -213,6 +211,15 @@ public:
 	
 	int Run(int argc, char** argv) {
 		return TestBed::run(argc, argv);
+	}
+
+	void SetCameraPosition(vec3 pos) {
+		cameraPosition = pos;
+	}
+
+	void SetCameraYawPitch(float yaw, float pitch) {
+		cameraYaw = radians(yaw);
+		cameraPitch = radians(pitch);
 	}
 
 	//getters
@@ -254,6 +261,7 @@ public:
 
 	static void DrawGrid(const vec3 point = vec3(0), uint size = 20) {
 		dde->drawGrid(Axis::Y, vec3ToFloats(point), size);
+		dde->setTransform(nullptr);
 	}
 
 	static void DrawAxis(const vec3 point) { //todo rotation
@@ -287,8 +295,6 @@ public:
 		//wuuuuuuuuuuuuuuuuuuuuuuuuut? todo fixme *send halp* wth
  		mat4 nm = translate(mat4(1), -vec3(inverse(m)[3]));
 		m = nm *mat4(mat3(m));
- 
- 		dde->setTransform(nullptr);
 
 		memcpy(&obb.m_mtx, &m, sizeof m);
 		dde->setColor(color.val);
